@@ -21,7 +21,6 @@ package me.itzsomebody.radon.transformers.miscellaneous;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import me.itzsomebody.radon.Logger;
 import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.config.ConfigurationSetting;
 import me.itzsomebody.radon.exceptions.InvalidConfigurationValueException;
@@ -74,7 +73,7 @@ public class TrashClasses extends Transformer {
         for (int i = 0; i < classNames.size() % 20; i++)
             DESCRIPTORS.add("L" + classNames.get(RandomUtils.getRandomInt(classNames.size())) + ";");
 
-        for (int i = 0; i < radon.config.getnTrashClasses(); i++) {
+        for (int i = 0; i < radon.getConfig().getnTrashClasses(); i++) {
             ClassNode classNode = generateClass();
             ClassWriter cw = new ClassWriter(0);
             cw.newUTF8("RADON" + Main.VERSION);
@@ -83,7 +82,7 @@ public class TrashClasses extends Transformer {
             this.getResources().put(classNode.name + ".class", cw.toByteArray());
         }
 
-        Logger.stdOut(String.format("Generated %d trash classes.", radon.config.getnTrashClasses()));
+        Main.info(String.format("Generated %d trash classes.", radon.getConfig().getnTrashClasses()));
     }
 
     private ClassNode generateClass() {

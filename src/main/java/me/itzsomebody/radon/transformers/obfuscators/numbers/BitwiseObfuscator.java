@@ -19,13 +19,12 @@
 package me.itzsomebody.radon.transformers.obfuscators.numbers;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.utils.ASMUtils;
 import me.itzsomebody.radon.utils.RandomUtils;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.MethodNode;
 
 /**
  * Splits integer and long constants into random bitwise operations.
@@ -38,34 +37,34 @@ public class BitwiseObfuscator extends NumberObfuscation {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)
                         && hasInstructions(methodWrapper)).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
-                    int leeway = getSizeLeeway(methodNode);
+                    int leeway = getSizeLeeway(methodWrapper);
+                    InsnList methodInstructions = methodWrapper.getInstructions();
 
-                    for (AbstractInsnNode insn : methodNode.instructions.toArray()) {
+                    for (AbstractInsnNode insn : methodInstructions.toArray()) {
                         if (leeway < 10000)
                             break;
 
                         if (ASMUtils.isIntInsn(insn) && master.isIntegerTamperingEnabled()) {
                             InsnList insns = obfuscateNumber(ASMUtils.getIntegerFromInsn(insn));
 
-                            methodNode.instructions.insert(insn, insns);
-                            methodNode.instructions.remove(insn);
+                            methodInstructions.insert(insn, insns);
+                            methodInstructions.remove(insn);
 
                             counter.incrementAndGet();
                         } else if (ASMUtils.isLongInsn(insn) && master.isLongTamperingEnabled()) {
                             InsnList insns = obfuscateNumber(ASMUtils.getLongFromInsn(insn));
 
-                            methodNode.instructions.insert(insn, insns);
-                            methodNode.instructions.remove(insn);
+                            methodInstructions.insert(insn, insns);
+                            methodInstructions.remove(insn);
 
                             counter.incrementAndGet();
                         }
                     }
                 }));
 
-        Logger.stdOut("Split " + counter.get() + " number constants into bitwise instructions");
+        Main.info("Split " + counter.get() + " number constants into bitwise instructions");
     }
 
     private InsnList obfuscateNumber(int originalNum) {

@@ -18,7 +18,14 @@
 
 package me.itzsomebody.radon.transformers.obfuscators.ejector;
 
-import me.itzsomebody.radon.Logger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.analysis.constant.ConstantAnalyzer;
 import me.itzsomebody.radon.analysis.constant.values.AbstractValue;
 import me.itzsomebody.radon.asm.ClassWrapper;
@@ -31,10 +38,6 @@ import me.itzsomebody.radon.transformers.obfuscators.ejector.phases.FieldSetEjec
 import me.itzsomebody.radon.transformers.obfuscators.ejector.phases.MethodCallEjector;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.Frame;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 import static me.itzsomebody.radon.utils.ConfigUtils.getValueOrDefault;
 
@@ -63,7 +66,7 @@ public class Ejector extends Transformer {
                 .filter(classWrapper -> !excluded(classWrapper))
                 .forEach(classWrapper -> processClass(classWrapper, counter));
 
-        Logger.stdOut(String.format("Ejected %d regions.", counter.get()));
+        Main.info(String.format("Ejected %d regions.", counter.get()));
     }
 
     private List<AbstractEjectPhase> getPhases(EjectorContext ejectorContext) {
@@ -76,21 +79,21 @@ public class Ejector extends Transformer {
     }
 
     private void processClass(ClassWrapper classWrapper, AtomicInteger counter) {
-        new ArrayList<>(classWrapper.methods).stream()
+        new ArrayList<>(classWrapper.getMethods()).stream()
                 .filter(methodWrapper -> !excluded(methodWrapper))
-                .filter(methodWrapper -> !"<init>".equals(methodWrapper.methodNode.name))
+                .filter(methodWrapper -> !"<init>".equals(methodWrapper.getMethodNode().name))
                 .forEach(methodWrapper -> {
                     EjectorContext ejectorContext = new EjectorContext(counter, classWrapper, junkArguments, junkArgumentStrength);
                     getPhases(ejectorContext).forEach(ejectPhase -> {
                         ConstantAnalyzer constantAnalyzer = new ConstantAnalyzer();
                         try {
-                            Logger.stdOut("Analyze: " + classWrapper.originalName + "::" + methodWrapper.originalName + methodWrapper.originalDescription);
-                            Frame<AbstractValue>[] frames = constantAnalyzer.analyze(classWrapper.classNode.name, methodWrapper.methodNode);
+                            Main.info("Analyze: " + classWrapper.getOriginalName() + "::" + methodWrapper.getOriginalName() + methodWrapper.getOriginalDescription());
+                            Frame<AbstractValue>[] frames = constantAnalyzer.analyze(classWrapper.getName(), methodWrapper.getMethodNode());
 
                             ejectPhase.process(methodWrapper, frames);
                         } catch (AnalyzerException e) {
-                            Logger.stdErr("Can't analyze method: " + classWrapper.originalName + "::" + methodWrapper.originalName + methodWrapper.originalDescription);
-                            Logger.stdErr(e.toString());
+                            Main.severe("Can't analyze method: " + classWrapper.getOriginalName() + "::" + methodWrapper.getOriginalName() + methodWrapper.getOriginalDescription());
+                            Main.severe(e.toString());
                         }
                     });
                 });

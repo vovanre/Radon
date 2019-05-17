@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.config.ConfigurationSetting;
 import me.itzsomebody.radon.exceptions.InvalidConfigurationValueException;
 import me.itzsomebody.radon.exclusions.ExclusionType;
@@ -44,9 +44,9 @@ public class ResourceRenamer extends Transformer {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)
                         && hasInstructions(methodWrapper)).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
+                    MethodNode methodNode = methodWrapper.getMethodNode();
 
                     Stream.of(methodNode.instructions.toArray()).filter(insn -> insn instanceof LdcInsnNode
                             && ((LdcInsnNode) insn).cst instanceof String).forEach(insn -> {
@@ -56,13 +56,13 @@ public class ResourceRenamer extends Transformer {
                         if (s.startsWith("/"))
                             resourceName = s.substring(1);
                         else
-                            resourceName = classWrapper.originalName.substring(0, classWrapper.originalName.lastIndexOf('/') + 1) + s;
+                            resourceName = classWrapper.getOriginalName().substring(0, classWrapper.getOriginalName().lastIndexOf('/') + 1) + s;
 
                         if (getResources().containsKey(resourceName))
                             if (mappings.containsKey(resourceName))
                                 ((LdcInsnNode) insn).cst = mappings.get(resourceName);
                             else {
-                                String newName = '/' + randomString();
+                                String newName = '/' + uniqueRandomString();
                                 ((LdcInsnNode) insn).cst = newName;
                                 mappings.put(resourceName, newName);
                             }
@@ -78,7 +78,7 @@ public class ResourceRenamer extends Transformer {
             }
         });
 
-        Logger.stdOut("Renamed " + counter.get() + " resources");
+        Main.info("Renamed " + counter.get() + " resources");
     }
 
     @Override

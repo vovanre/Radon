@@ -19,7 +19,7 @@
 package me.itzsomebody.radon.transformers.shrinkers;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -33,15 +33,15 @@ public class LocalVariableRemover extends Shrinker {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)
-                        && methodWrapper.methodNode.localVariables != null).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)
+                        && methodWrapper.getMethodNode().localVariables != null).forEach(methodWrapper -> {
+                    MethodNode methodNode = methodWrapper.getMethodNode();
 
                     counter.addAndGet(methodNode.localVariables.size());
                     methodNode.localVariables = null;
                 }));
 
-        Logger.stdOut(String.format("Removed %d local variables.", counter.get()));
+        Main.info(String.format("Removed %d local variables.", counter.get()));
     }
 
     @Override

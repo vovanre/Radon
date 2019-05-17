@@ -19,7 +19,7 @@
 package me.itzsomebody.radon.transformers.shrinkers;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 
 /**
  * Strips out invisible parameter annotations.
@@ -32,14 +32,14 @@ public class InvisibleParameterAnnotationsRemover extends Shrinker {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)
-                        && methodWrapper.methodNode.invisibleParameterAnnotations != null).forEach(methodWrapper -> {
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)
+                        && methodWrapper.getMethodNode().invisibleParameterAnnotations != null).forEach(methodWrapper -> {
 
-                    counter.addAndGet(methodWrapper.methodNode.invisibleAnnotableParameterCount);
-                    methodWrapper.methodNode.invisibleParameterAnnotations = null;
+                    counter.addAndGet(methodWrapper.getMethodNode().invisibleAnnotableParameterCount);
+                    methodWrapper.getMethodNode().invisibleParameterAnnotations = null;
                 }));
 
-        Logger.stdOut(String.format("Removed %d invisible parameter annotations.", counter.get()));
+        Main.info(String.format("Removed %d invisible parameter annotations.", counter.get()));
     }
 
     @Override

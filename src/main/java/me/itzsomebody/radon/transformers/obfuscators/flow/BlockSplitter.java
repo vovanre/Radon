@@ -20,7 +20,7 @@ package me.itzsomebody.radon.transformers.obfuscators.flow;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -32,7 +32,6 @@ import org.objectweb.asm.tree.MethodNode;
  * <p>
  * P1->P2 becomes GOTO_P1->P2->P1->GOTO_P2
  * <p>
- * FIXME: breaks stuff.
  *
  * @author ItzSomebody
  */
@@ -41,9 +40,9 @@ public class BlockSplitter extends FlowObfuscation {
     public void transform() {
         AtomicInteger counter = new AtomicInteger();
 
-        getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
+        getClassWrappers().stream().filter(cw -> !excluded(cw)).forEach(cw ->
+                cw.getMethods().stream().filter(mw -> !excluded(mw)).forEach(mw -> {
+                    MethodNode methodNode = mw.getMethodNode();
 
                     if (methodNode.instructions.size() > 10) {
                         LabelNode p1 = new LabelNode();
@@ -93,6 +92,6 @@ public class BlockSplitter extends FlowObfuscation {
                     }
                 }));
 
-        Logger.stdOut("Rearranged " + counter.get() + " blocks");
+        Main.info("Rearranged " + counter.get() + " blocks");
     }
 }

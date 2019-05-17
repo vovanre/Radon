@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Manifest;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.asm.ClassWrapper;
 import me.itzsomebody.radon.config.ConfigurationSetting;
 import me.itzsomebody.radon.exceptions.InvalidConfigurationValueException;
@@ -41,7 +41,7 @@ import org.objectweb.asm.tree.ClassNode;
 
 /**
  * Packs classes and resources into a stub file which is unpacked on runtime.
- * This is a mega-dumb transformer and is also broken. :omega_lul:
+ * fixme: This is a mega-dumb transformer and is also broken. :omega_lul:
  *
  * @author ItzSomebody.
  */
@@ -62,7 +62,7 @@ public class Packer extends Transformer {
 
             getClasses().forEach((name, wrapper) -> {
                 try {
-                    byte[] bytes = radon.class2Bytes(wrapper);
+                    byte[] bytes = wrapper.toByteArray();
 
                     out.writeShort(name.length() + ".class".length());
                     for (char c : (name + ".class").toCharArray())
@@ -75,7 +75,7 @@ public class Packer extends Transformer {
                     toRemove.add(name);
                 } catch (Throwable t) {
                     t.printStackTrace();
-                    throw new RuntimeException();
+                    throw new RadonException();
                 }
             });
 
@@ -106,7 +106,7 @@ public class Packer extends Transformer {
                     toRemove.add(name);
                 } catch (Throwable t) {
                     t.printStackTrace();
-                    throw new RuntimeException();
+                    throw new RadonException();
                 }
             });
 
@@ -128,7 +128,7 @@ public class Packer extends Transformer {
             throw new RadonException(e);
         }
 
-        Logger.stdOut("Packed " + counter.get() + " files");
+        Main.info("Packed " + counter.get() + " files");
     }
 
     @Override
@@ -668,14 +668,14 @@ public class Packer extends Transformer {
     }
 
     private class MemberNames {
-        private String className = randomString();
-        private String resourcesFieldName = randomString();
-        private String stubBytesFieldName = randomString();
-        private String readByteMethodName = randomString();
-        private String readCharMethodName = randomString();
-        private String readShortMethodName = randomString();
-        private String readIntMethodName = randomString();
-        private String toByteArrayMethodName = randomString();
-        private String stubName = '/' + randomString();
+        private String className = uniqueRandomString();
+        private String resourcesFieldName = uniqueRandomString();
+        private String stubBytesFieldName = uniqueRandomString();
+        private String readByteMethodName = uniqueRandomString();
+        private String readCharMethodName = uniqueRandomString();
+        private String readShortMethodName = uniqueRandomString();
+        private String readIntMethodName = uniqueRandomString();
+        private String toByteArrayMethodName = uniqueRandomString();
+        private String stubName = '/' + uniqueRandomString();
     }
 }

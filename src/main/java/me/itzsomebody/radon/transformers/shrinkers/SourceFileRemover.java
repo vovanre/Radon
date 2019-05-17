@@ -19,7 +19,7 @@
 package me.itzsomebody.radon.transformers.shrinkers;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 
 /**
  * Removes the sourcefile attribute.
@@ -32,12 +32,12 @@ public class SourceFileRemover extends Shrinker {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)
-                && classWrapper.classNode.sourceFile != null).forEach(classWrapper -> {
-            classWrapper.classNode.sourceFile = null;
+                && classWrapper.getClassNode().sourceFile != null).forEach(classWrapper -> {
+            classWrapper.getClassNode().sourceFile = null;
             counter.incrementAndGet();
         });
 
-        Logger.stdOut(String.format("Removed %d source name attributes.", counter.get()));
+        Main.info(String.format("Removed %d source name attributes.", counter.get()));
     }
 
     @Override

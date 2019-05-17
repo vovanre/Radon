@@ -20,7 +20,7 @@ package me.itzsomebody.radon.transformers.optimizers;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -36,16 +36,16 @@ public class NopRemover extends Optimizer {
         long current = System.currentTimeMillis();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)
-                        && hasInstructions(methodWrapper.methodNode)).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)
+                        && hasInstructions(methodWrapper.getMethodNode())).forEach(methodWrapper -> {
+                    MethodNode methodNode = methodWrapper.getMethodNode();
 
                     Stream.of(methodNode.instructions.toArray()).filter(insn -> insn.getOpcode() == NOP)
                             .forEach(insn -> methodNode.instructions.remove(insn));
                 })
         );
 
-        Logger.stdOut(String.format("Removed %d NOP instructions. [%dms]", count.get(), tookThisLong(current)));
+        Main.info(String.format("Removed %d NOP instructions. [%dms]", count.get(), tookThisLong(current)));
     }
 
     @Override

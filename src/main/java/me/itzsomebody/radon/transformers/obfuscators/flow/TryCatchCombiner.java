@@ -20,7 +20,7 @@ package me.itzsomebody.radon.transformers.obfuscators.flow;
 
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import me.itzsomebody.radon.Logger;
+import me.itzsomebody.radon.Main;
 import me.itzsomebody.radon.utils.ASMUtils;
 import me.itzsomebody.radon.utils.RandomUtils;
 import org.objectweb.asm.tree.InsnList;
@@ -47,8 +47,8 @@ public class TryCatchCombiner extends FlowObfuscation {
         AtomicInteger counter = new AtomicInteger();
 
         getClassWrappers().stream().filter(classWrapper -> !excluded(classWrapper)).forEach(classWrapper ->
-                classWrapper.methods.stream().filter(methodWrapper -> !excluded(methodWrapper)).forEach(methodWrapper -> {
-                    MethodNode methodNode = methodWrapper.methodNode;
+                classWrapper.getMethods().stream().filter(methodWrapper -> !excluded(methodWrapper)).forEach(methodWrapper -> {
+                    MethodNode methodNode = methodWrapper.getMethodNode();
 
                     HashSet<LabelNode> starts = new HashSet<>();
                     if (methodNode.tryCatchBlocks.stream().anyMatch(tcbn -> !starts.add(tcbn.start)))
@@ -94,6 +94,6 @@ public class TryCatchCombiner extends FlowObfuscation {
                     });
                 }));
 
-        Logger.stdOut("Combined " + counter.incrementAndGet() + " try blocks with their catches.");
+        Main.info("Combined " + counter.incrementAndGet() + " try blocks with their catches.");
     }
 }
